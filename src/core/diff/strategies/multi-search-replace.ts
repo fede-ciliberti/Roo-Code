@@ -464,7 +464,7 @@ Only use a single line of '=======' between search and replacement content, beca
 					bestScore,
 					bestMatchIndex,
 					bestMatchContent: midContent,
-				} = fuzzySearch(resultLines, searchChunk, searchStartIndex, searchEndIndex) // resultLines tiene un array de líneas sin retorno de carro. searchChunk tiene el contenido de la búsqueda con retorno de carro
+				} = fuzzySearch(resultLines, searchChunk, searchStartIndex, searchEndIndex) // resultLines is an array of lines without carriage returns. searchChunk contains the search content with carriage returns.
 				matchIndex = bestMatchIndex
 				bestMatchScore = bestScore
 				bestMatchContent = midContent
