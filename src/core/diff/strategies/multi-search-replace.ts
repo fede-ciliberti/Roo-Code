@@ -36,7 +36,7 @@ function getWeightedThreshold(baseThreshold: number, textLength: number): number
 		MIN_THRESHOLD_FACTOR,
 		1 - (Math.log10(Math.max(textLength, LENGTH_THRESHOLD)) - 2) * 0.1,
 	)
-	return Math.max(baseThreshold * lengthFactor, 0.8) // Nunca por debajo de 0.6
+	return Math.max(baseThreshold * lengthFactor, 0.8) // Nunca por debajo de 0.8
 }
 
 /**
