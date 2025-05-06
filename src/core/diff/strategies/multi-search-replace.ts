@@ -29,14 +29,13 @@ function getSimilarity(original: string, search: string): number {
 	return 1 - dist / maxLength
 }
 
-function getWeightedThreshold(baseThreshold: number, textLength: number): number {
-	const MIN_THRESHOLD_FACTOR = 0.8
-	const LENGTH_THRESHOLD = 50
-	const lengthFactor = Math.max(
-		MIN_THRESHOLD_FACTOR,
-		1 - (Math.log10(Math.max(textLength, LENGTH_THRESHOLD)) - 2) * 0.1,
-	)
-	return Math.max(baseThreshold * lengthFactor, 0.8) // Nunca por debajo de 0.6
+export function getWeightedThreshold(baseThreshold: number, textLength: number): number {
+	if (baseThreshold === 1) return 1
+	const MIN_THRESHOLD = 0.8
+	const lengthFactor = 1 - 1 / (1 + Math.log(Math.max(textLength, 2)) / Math.log(10))
+	const flex = (1 - baseThreshold) * (1 - lengthFactor)
+	const threshold = Math.max(baseThreshold + flex, MIN_THRESHOLD)
+	return Math.min(threshold, 1)
 }
 
 /**
@@ -361,7 +360,6 @@ Only use a single line of '=======' between search and replacement content, beca
 		// Detect line ending from original content
 		const lineEnding = originalContent.includes("\r\n") ? "\r\n" : "\n"
 		let resultLines = originalContent.split(/\r?\n/)
-		let delta = 0
 		let diffResults: DiffResult[] = []
 		let appliedCount = 0
 		const replacements = matches
@@ -370,11 +368,20 @@ Only use a single line of '=======' between search and replacement content, beca
 				searchContent: match[6],
 				replaceContent: match[7],
 			}))
-			.sort((a, b) => a.startLine - b.startLine)
+			.map((replacement) => {
+				if (replacement.replaceContent) {
+					replacement.replaceContent = replacement.replaceContent.replace(
+						/(^|\n)(\s*)\:start_line\:\s*\d+\s*\n/g,
+						"$1",
+					)
+				}
+				return replacement
+			})
+			.sort((a, b) => b.startLine - a.startLine)
 
 		for (const replacement of replacements) {
 			let { searchContent, replaceContent } = replacement
-			let startLine = replacement.startLine + (replacement.startLine === 0 ? 0 : delta)
+			let startLine = replacement.startLine
 
 			// First unescape any escaped markers in the content
 			searchContent = this.unescapeMarkers(searchContent)
@@ -563,7 +570,6 @@ Only use a single line of '=======' between search and replacement content, beca
 			const beforeMatch = resultLines.slice(0, matchIndex)
 			const afterMatch = resultLines.slice(matchIndex + searchLines.length)
 			resultLines = [...beforeMatch, ...indentedReplaceLines, ...afterMatch]
-			delta = delta - matchedLines.length + replaceLines.length
 			appliedCount++
 		}
 		const finalContent = resultLines.join(lineEnding)
