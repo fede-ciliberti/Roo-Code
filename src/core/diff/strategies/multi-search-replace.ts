@@ -374,6 +374,7 @@ Only use a single line of '=======' between search and replacement content, beca
 						/(^|\n)(\s*)\:start_line\:\s*\d+\s*\n/g,
 						"$1",
 					)
+					replacement.replaceContent = replacement.replaceContent.replace(/(^|\n)(\s*)-------\s*\n/g, "$1")
 				}
 				return replacement
 			})
