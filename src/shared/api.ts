@@ -1,6 +1,6 @@
 import { ModelInfo, ProviderName, ProviderSettings } from "../schemas"
 
-export type { ModelInfo, ProviderName as ApiProvider }
+export type { ModelInfo, ProviderName }
 
 export type ApiHandlerOptions = Omit<ProviderSettings, "apiProvider" | "id">
 
@@ -437,7 +437,7 @@ export const glamaDefaultModelInfo: ModelInfo = {
 
 // Requesty
 // https://requesty.ai/router-2
-export const requestyDefaultModelId = "anthropic/claude-3-7-sonnet-latest"
+export const requestyDefaultModelId = "coding/claude-3-7-sonnet"
 export const requestyDefaultModelInfo: ModelInfo = {
 	maxTokens: 8192,
 	contextWindow: 200_000,
@@ -449,7 +449,7 @@ export const requestyDefaultModelInfo: ModelInfo = {
 	cacheWritesPrice: 3.75,
 	cacheReadsPrice: 0.3,
 	description:
-		"Claude 3.7 Sonnet is an advanced large language model with improved reasoning, coding, and problem-solving capabilities. It introduces a hybrid reasoning approach, allowing users to choose between rapid responses and extended, step-by-step processing for complex tasks. The model demonstrates notable improvements in coding, particularly in front-end development and full-stack updates, and excels in agentic workflows, where it can autonomously navigate multi-step processes. Claude 3.7 Sonnet maintains performance parity with its predecessor in standard mode while offering an extended reasoning mode for enhanced accuracy in math, coding, and instruction-following tasks. Read more at the [blog post here](https://www.anthropic.com/news/claude-3-7-sonnet)",
+		"The best coding model, optimized by Requesty, and automatically routed to the fastest provider. Claude 3.7 Sonnet is an advanced large language model with improved reasoning, coding, and problem-solving capabilities. It introduces a hybrid reasoning approach, allowing users to choose between rapid responses and extended, step-by-step processing for complex tasks. The model demonstrates notable improvements in coding, particularly in front-end development and full-stack updates, and excels in agentic workflows, where it can autonomously navigate multi-step processes. Claude 3.7 Sonnet maintains performance parity with its predecessor in standard mode while offering an extended reasoning mode for enhanced accuracy in math, coding, and instruction-following tasks. Read more at the [blog post here](https://www.anthropic.com/news/claude-3-7-sonnet)",
 }
 
 // OpenRouter
@@ -494,6 +494,15 @@ export const vertexModels = {
 		thinking: false,
 	},
 	"gemini-2.5-pro-preview-03-25": {
+		maxTokens: 65_535,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: true,
+		isPromptCacheOptional: true,
+		inputPrice: 2.5,
+		outputPrice: 15,
+	},
+	"gemini-2.5-pro-preview-05-06": {
 		maxTokens: 65_535,
 		contextWindow: 1_048_576,
 		supportsImages: true,
@@ -679,6 +688,31 @@ export const geminiModels = {
 		outputPrice: 0,
 	},
 	"gemini-2.5-pro-preview-03-25": {
+		maxTokens: 65_535,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: true,
+		isPromptCacheOptional: true,
+		inputPrice: 2.5, // This is the pricing for prompts above 200k tokens.
+		outputPrice: 15,
+		cacheReadsPrice: 0.625,
+		cacheWritesPrice: 4.5,
+		tiers: [
+			{
+				contextWindow: 200_000,
+				inputPrice: 1.25,
+				outputPrice: 10,
+				cacheReadsPrice: 0.31,
+			},
+			{
+				contextWindow: Infinity,
+				inputPrice: 2.5,
+				outputPrice: 15,
+				cacheReadsPrice: 0.625,
+			},
+		],
+	},
+	"gemini-2.5-pro-preview-05-06": {
 		maxTokens: 65_535,
 		contextWindow: 1_048_576,
 		supportsImages: true,
@@ -1102,6 +1136,20 @@ export const unboundDefaultModelInfo: ModelInfo = {
 	cacheReadsPrice: 0.3,
 }
 
+// LiteLLM
+// https://docs.litellm.ai/
+export const litellmDefaultModelId = "anthropic/claude-3-7-sonnet-20250219"
+export const litellmDefaultModelInfo: ModelInfo = {
+	maxTokens: 8192,
+	contextWindow: 200_000,
+	supportsImages: true,
+	supportsComputerUse: true,
+	supportsPromptCache: true,
+	inputPrice: 3.0,
+	outputPrice: 15.0,
+	cacheWritesPrice: 3.75,
+	cacheReadsPrice: 0.3,
+}
 // xAI
 // https://docs.x.ai/docs/api-reference
 export type XAIModelId = keyof typeof xaiModels
@@ -1672,6 +1720,7 @@ export const PROMPT_CACHING_MODELS = new Set([
 	"anthropic/claude-3.7-sonnet:beta",
 	"anthropic/claude-3.7-sonnet:thinking",
 	"google/gemini-2.5-pro-preview-03-25",
+	"google/gemini-2.5-pro-preview-05-06",
 	"google/gemini-2.0-flash-001",
 	"google/gemini-flash-1.5",
 	"google/gemini-flash-1.5-8b",
@@ -1681,6 +1730,7 @@ export const PROMPT_CACHING_MODELS = new Set([
 // in settings).
 export const OPTIONAL_PROMPT_CACHING_MODELS = new Set([
 	"google/gemini-2.5-pro-preview-03-25",
+	"google/gemini-2.5-pro-preview-05-06",
 	"google/gemini-2.0-flash-001",
 	"google/gemini-flash-1.5",
 	"google/gemini-flash-1.5-8b",
@@ -1695,11 +1745,18 @@ export const COMPUTER_USE_MODELS = new Set([
 	"anthropic/claude-3.7-sonnet:thinking",
 ])
 
-const routerNames = ["openrouter", "requesty", "glama", "unbound"] as const
+const routerNames = ["openrouter", "requesty", "glama", "unbound", "litellm"] as const
 
 export type RouterName = (typeof routerNames)[number]
 
 export const isRouterName = (value: string): value is RouterName => routerNames.includes(value as RouterName)
+
+export function toRouterName(value?: string): RouterName {
+	if (value && isRouterName(value)) {
+		return value
+	}
+	throw new Error(`Invalid router name: ${value}`)
+}
 
 export type ModelRecord = Record<string, ModelInfo>
 

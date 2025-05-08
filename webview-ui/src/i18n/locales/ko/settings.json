@@ -23,16 +23,14 @@
 	"sections": {
 		"providers": "공급자",
 		"autoApprove": "자동 승인",
-		"browser": "브라우저 / 컴퓨터 사용",
+		"browser": "컴퓨터 접근",
 		"checkpoints": "체크포인트",
 		"notifications": "알림",
-		"contextManagement": "컨텍스트 관리",
+		"contextManagement": "컨텍스트",
 		"terminal": "터미널",
-		"advanced": "고급",
-		"experimental": "실험적 기능",
+		"experimental": "실험적",
 		"language": "언어",
-		"about": "Roo Code 정보",
-		"interface": "인터페이스"
+		"about": "Roo Code 정보"
 	},
 	"autoApprove": {
 		"description": "Roo가 승인 없이 자동으로 작업을 수행할 수 있도록 허용합니다. AI를 완전히 신뢰하고 관련 보안 위험을 이해하는 경우에만 이러한 설정을 활성화하세요.",
@@ -119,6 +117,10 @@
 		"noCustomHeaders": "정의된 사용자 정의 헤더가 없습니다. + 버튼을 클릭하여 추가하세요.",
 		"requestyApiKey": "Requesty API 키",
 		"getRequestyApiKey": "Requesty API 키 받기",
+		"refreshModels": {
+			"label": "모델 새로고침",
+			"hint": "최신 모델을 보려면 설정을 다시 열어주세요."
+		},
 		"openRouterTransformsText": "프롬프트와 메시지 체인을 컨텍스트 크기로 압축 (<a>OpenRouter Transforms</a>)",
 		"anthropicApiKey": "Anthropic API 키",
 		"getAnthropicApiKey": "Anthropic API 키 받기",
@@ -140,6 +142,8 @@
 		"codestralBaseUrlDesc": "Codestral 모델의 대체 URL을 설정합니다.",
 		"xaiApiKey": "xAI API 키",
 		"getXaiApiKey": "xAI API 키 받기",
+		"litellmApiKey": "LiteLLM API 키",
+		"litellmBaseUrl": "LiteLLM 기본 URL",
 		"awsCredentials": "AWS 자격 증명",
 		"awsProfile": "AWS 프로필",
 		"awsProfileName": "AWS 프로필 이름",
@@ -414,8 +418,8 @@
 		}
 	},
 	"promptCaching": {
-		"label": "프롬프트 캐싱 활성화",
-		"description": "활성화하면 Roo는 비용 절감을 위해 프롬프트 캐싱을 켠 상태로 이 모델을 사용합니다."
+		"label": "프롬프트 캐싱 비활성화",
+		"description": "체크하면 Roo가 이 모델에 대해 프롬프트 캐싱을 사용하지 않습니다."
 	},
 	"temperature": {
 		"useCustom": "사용자 정의 온도 사용",

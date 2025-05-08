@@ -23,14 +23,12 @@
 	"sections": {
 		"providers": "提供商",
 		"autoApprove": "自动批准",
-		"browser": "浏览器交互",
+		"browser": "计算机交互",
 		"checkpoints": "检查点",
-		"interface": "界面内容",
 		"notifications": "通知",
-		"contextManagement": "上下文管理",
+		"contextManagement": "上下文",
 		"terminal": "终端",
-		"advanced": "高级",
-		"experimental": "实验性功能",
+		"experimental": "实验性",
 		"language": "语言",
 		"about": "关于 Roo Code"
 	},
@@ -119,6 +117,10 @@
 		"getGlamaApiKey": "获取 Glama API 密钥",
 		"requestyApiKey": "Requesty API 密钥",
 		"getRequestyApiKey": "获取 Requesty API 密钥",
+		"refreshModels": {
+			"label": "刷新模型",
+			"hint": "请重新打开设置以查看最新模型。"
+		},
 		"openRouterTransformsText": "自动压缩提示词和消息链到上下文长度限制内 (<a>OpenRouter转换</a>)",
 		"anthropicApiKey": "Anthropic API 密钥",
 		"getAnthropicApiKey": "获取 Anthropic API 密钥",
@@ -140,6 +142,8 @@
 		"codestralBaseUrlDesc": "为 Codestral 模型设置替代 URL。",
 		"xaiApiKey": "xAI API 密钥",
 		"getXaiApiKey": "获取 xAI API 密钥",
+		"litellmApiKey": "LiteLLM API 密钥",
+		"litellmBaseUrl": "LiteLLM 基础 URL",
 		"awsCredentials": "AWS 凭证",
 		"awsProfile": "AWS 配置文件",
 		"awsProfileName": "AWS 配置文件名称",
@@ -414,8 +418,8 @@
 		}
 	},
 	"promptCaching": {
-		"label": "启用提示词缓存",
-		"description": "启用后 Roo 将使用提示词缓存功能以降低成本。"
+		"label": "禁用提示词缓存",
+		"description": "选中后，Roo 将不会为此模型使用提示词缓存。"
 	},
 	"temperature": {
 		"useCustom": "使用自定义温度",

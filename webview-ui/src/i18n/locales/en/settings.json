@@ -23,16 +23,14 @@
 	"sections": {
 		"providers": "Providers",
 		"autoApprove": "Auto-Approve",
-		"browser": "Browser / Computer Use",
+		"browser": "Browser",
 		"checkpoints": "Checkpoints",
 		"notifications": "Notifications",
-		"contextManagement": "Context Management",
+		"contextManagement": "Context",
 		"terminal": "Terminal",
-		"advanced": "Advanced",
-		"experimental": "Experimental Features",
+		"experimental": "Experimental",
 		"language": "Language",
-		"about": "About Roo Code",
-		"interface": "Interface"
+		"about": "About Roo Code"
 	},
 	"autoApprove": {
 		"description": "Allow Roo to automatically perform operations without requiring approval. Enable these settings only if you fully trust the AI and understand the associated security risks.",
@@ -118,6 +116,10 @@
 		"headerValue": "Header value",
 		"noCustomHeaders": "No custom headers defined. Click the + button to add one.",
 		"requestyApiKey": "Requesty API Key",
+		"refreshModels": {
+			"label": "Refresh Models",
+			"hint": "Please reopen the settings to see the latest models."
+		},
 		"getRequestyApiKey": "Get Requesty API Key",
 		"openRouterTransformsText": "Compress prompts and message chains to the context size (<a>OpenRouter Transforms</a>)",
 		"anthropicApiKey": "Anthropic API Key",
@@ -140,6 +142,8 @@
 		"codestralBaseUrlDesc": "Set an alternative URL for the Codestral model.",
 		"xaiApiKey": "xAI API Key",
 		"getXaiApiKey": "Get xAI API Key",
+		"litellmApiKey": "LiteLLM API Key",
+		"litellmBaseUrl": "LiteLLM Base URL",
 		"awsCredentials": "AWS Credentials",
 		"awsProfile": "AWS Profile",
 		"awsProfileName": "AWS Profile Name",
@@ -414,8 +418,8 @@
 		}
 	},
 	"promptCaching": {
-		"label": "Enable prompt caching",
-		"description": "When enabled, Roo will use this model with prompt caching turned on in order to reduce costs."
+		"label": "Disable prompt caching",
+		"description": "When checked, Roo will not use prompt caching for this model."
 	},
 	"temperature": {
 		"useCustom": "Use custom temperature",

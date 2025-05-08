@@ -23,16 +23,14 @@
 	"sections": {
 		"providers": "プロバイダー",
 		"autoApprove": "自動承認",
-		"browser": "ブラウザ / コンピューター使用",
+		"browser": "コンピューターアクセス",
 		"checkpoints": "チェックポイント",
 		"notifications": "通知",
-		"contextManagement": "コンテキスト管理",
+		"contextManagement": "コンテキスト",
 		"terminal": "ターミナル",
-		"advanced": "詳細設定",
-		"experimental": "実験的機能",
+		"experimental": "実験的",
 		"language": "言語",
-		"about": "Roo Codeについて",
-		"interface": "インターフェース"
+		"about": "Roo Codeについて"
 	},
 	"autoApprove": {
 		"description": "Rooが承認なしで自動的に操作を実行できるようにします。AIを完全に信頼し、関連するセキュリティリスクを理解している場合にのみ、これらの設定を有効にしてください。",
@@ -119,6 +117,10 @@
 		"noCustomHeaders": "カスタムヘッダーが定義されていません。+ ボタンをクリックして追加してください。",
 		"requestyApiKey": "Requesty APIキー",
 		"getRequestyApiKey": "Requesty APIキーを取得",
+		"refreshModels": {
+			"label": "モデルを更新",
+			"hint": "最新のモデルを表示するには設定を再度開いてください。"
+		},
 		"openRouterTransformsText": "プロンプトとメッセージチェーンをコンテキストサイズに圧縮 (<a>OpenRouter Transforms</a>)",
 		"anthropicApiKey": "Anthropic APIキー",
 		"getAnthropicApiKey": "Anthropic APIキーを取得",
@@ -140,6 +142,8 @@
 		"codestralBaseUrlDesc": "Codestralモデルの代替URLを設定します。",
 		"xaiApiKey": "xAI APIキー",
 		"getXaiApiKey": "xAI APIキーを取得",
+		"litellmApiKey": "LiteLLM APIキー",
+		"litellmBaseUrl": "LiteLLM ベースURL",
 		"awsCredentials": "AWS認証情報",
 		"awsProfile": "AWSプロファイル",
 		"awsProfileName": "AWSプロファイル名",
@@ -414,8 +418,8 @@
 		}
 	},
 	"promptCaching": {
-		"label": "プロンプトキャッシングを有効化",
-		"description": "有効にすると、Rooはコスト削減のためにプロンプトキャッシングを有効にしてこのモデルを使用します。"
+		"label": "プロンプトキャッシュを無効化",
+		"description": "チェックすると、Rooはこのモデルに対してプロンプトキャッシュを使用しません。"
 	},
 	"temperature": {
 		"useCustom": "カスタム温度を使用",

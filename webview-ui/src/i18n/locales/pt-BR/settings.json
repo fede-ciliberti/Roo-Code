@@ -22,17 +22,15 @@
 	},
 	"sections": {
 		"providers": "Provedores",
-		"autoApprove": "Aprovação automática",
-		"browser": "Navegador / Uso do computador",
-		"checkpoints": "Pontos de verificação",
+		"autoApprove": "Aprovação",
+		"browser": "Navegador",
+		"checkpoints": "Checkpoints",
 		"notifications": "Notificações",
-		"contextManagement": "Gestão de contexto",
+		"contextManagement": "Contexto",
 		"terminal": "Terminal",
-		"advanced": "Avançado",
-		"experimental": "Recursos experimentais",
+		"experimental": "Experimental",
 		"language": "Idioma",
-		"about": "Sobre o Roo Code",
-		"interface": "Interface"
+		"about": "Sobre"
 	},
 	"autoApprove": {
 		"description": "Permitir que o Roo realize operações automaticamente sem exigir aprovação. Ative essas configurações apenas se confiar totalmente na IA e compreender os riscos de segurança associados.",
@@ -119,6 +117,10 @@
 		"noCustomHeaders": "Nenhum cabeçalho personalizado definido. Clique no botão + para adicionar um.",
 		"requestyApiKey": "Chave de API Requesty",
 		"getRequestyApiKey": "Obter chave de API Requesty",
+		"refreshModels": {
+			"label": "Atualizar modelos",
+			"hint": "Por favor, reabra as configurações para ver os modelos mais recentes."
+		},
 		"openRouterTransformsText": "Comprimir prompts e cadeias de mensagens para o tamanho do contexto (<a>Transformações OpenRouter</a>)",
 		"anthropicApiKey": "Chave de API Anthropic",
 		"getAnthropicApiKey": "Obter chave de API Anthropic",
@@ -140,6 +142,8 @@
 		"codestralBaseUrlDesc": "Defina uma URL alternativa para o modelo Codestral.",
 		"xaiApiKey": "Chave de API xAI",
 		"getXaiApiKey": "Obter chave de API xAI",
+		"litellmApiKey": "Chave API LiteLLM",
+		"litellmBaseUrl": "URL base LiteLLM",
 		"awsCredentials": "Credenciais AWS",
 		"awsProfile": "Perfil AWS",
 		"awsProfileName": "Nome do Perfil AWS",
@@ -414,8 +418,8 @@
 		}
 	},
 	"promptCaching": {
-		"label": "Ativar cache de prompts",
-		"description": "Quando ativado, o Roo usará este modelo com o cache de prompts ativado para reduzir custos."
+		"label": "Desativar cache de prompts",
+		"description": "Quando marcado, o Roo não usará o cache de prompts para este modelo."
 	},
 	"temperature": {
 		"useCustom": "Usar temperatura personalizada",

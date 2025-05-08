@@ -23,16 +23,14 @@
 	"sections": {
 		"providers": "Провайдеры",
 		"autoApprove": "Автоодобрение",
-		"browser": "Браузер / Использование компьютера",
+		"browser": "Доступ к компьютеру",
 		"checkpoints": "Контрольные точки",
 		"notifications": "Уведомления",
-		"contextManagement": "Управление контекстом",
+		"contextManagement": "Контекст",
 		"terminal": "Терминал",
-		"advanced": "Дополнительно",
-		"experimental": "Экспериментальные функции",
+		"experimental": "Экспериментальное",
 		"language": "Язык",
-		"about": "О Roo Code",
-		"interface": "Интерфейс"
+		"about": "О Roo Code"
 	},
 	"autoApprove": {
 		"description": "Разрешить Roo автоматически выполнять операции без необходимости одобрения. Включайте эти параметры только если полностью доверяете ИИ и понимаете связанные с этим риски безопасности.",
@@ -119,6 +117,10 @@
 		"noCustomHeaders": "Пользовательские заголовки не определены. Нажмите кнопку +, чтобы добавить.",
 		"requestyApiKey": "Requesty API-ключ",
 		"getRequestyApiKey": "Получить Requesty API-ключ",
+		"refreshModels": {
+			"label": "Обновить модели",
+			"hint": "Пожалуйста, откройте настройки заново, чтобы увидеть последние модели."
+		},
 		"openRouterTransformsText": "Сжимать подсказки и цепочки сообщений до размера контекста (<a>OpenRouter Transforms</a>)",
 		"anthropicApiKey": "Anthropic API-ключ",
 		"getAnthropicApiKey": "Получить Anthropic API-ключ",
@@ -140,6 +142,8 @@
 		"codestralBaseUrlDesc": "Укажите альтернативный URL для модели Codestral.",
 		"xaiApiKey": "xAI API-ключ",
 		"getXaiApiKey": "Получить xAI API-ключ",
+		"litellmApiKey": "API-ключ LiteLLM",
+		"litellmBaseUrl": "Базовый URL LiteLLM",
 		"awsCredentials": "AWS-учётные данные",
 		"awsProfile": "Профиль AWS",
 		"awsProfileName": "Имя профиля AWS",
@@ -414,8 +418,8 @@
 		}
 	},
 	"promptCaching": {
-		"label": "Включить кэширование подсказок",
-		"description": "Если включено, Roo будет использовать эту модель с включенным кэшированием подсказок для снижения затрат."
+		"label": "Отключить кэширование промптов",
+		"description": "Если отмечено, Roo не будет использовать кэширование промптов для этой модели."
 	},
 	"temperature": {
 		"useCustom": "Использовать пользовательскую температуру",

@@ -22,17 +22,15 @@
 	},
 	"sections": {
 		"providers": "Proveïdors",
-		"autoApprove": "Aprovació automàtica",
-		"browser": "Navegador / Ús de l'ordinador",
+		"autoApprove": "Auto-aprovació",
+		"browser": "Accés a l'ordinador",
 		"checkpoints": "Punts de control",
 		"notifications": "Notificacions",
-		"contextManagement": "Gestió de context",
+		"contextManagement": "Context",
 		"terminal": "Terminal",
-		"advanced": "Avançat",
-		"experimental": "Funcions experimentals",
+		"experimental": "Experimental",
 		"language": "Idioma",
-		"about": "Sobre Roo Code",
-		"interface": "Interfície"
+		"about": "Sobre Roo Code"
 	},
 	"autoApprove": {
 		"description": "Permet que Roo realitzi operacions automàticament sense requerir aprovació. Activeu aquesta configuració només si confieu plenament en la IA i enteneu els riscos de seguretat associats.",
@@ -120,6 +118,10 @@
 		"getGlamaApiKey": "Obtenir clau API de Glama",
 		"requestyApiKey": "Clau API de Requesty",
 		"getRequestyApiKey": "Obtenir clau API de Requesty",
+		"refreshModels": {
+			"label": "Actualitzar models",
+			"hint": "Si us plau, torneu a obrir la configuració per veure els models més recents."
+		},
 		"anthropicApiKey": "Clau API d'Anthropic",
 		"getAnthropicApiKey": "Obtenir clau API d'Anthropic",
 		"anthropicUseAuthToken": "Passar la clau API d'Anthropic com a capçalera d'autorització en lloc de X-Api-Key",
@@ -140,6 +142,8 @@
 		"codestralBaseUrlDesc": "Establir una URL alternativa per al model Codestral.",
 		"xaiApiKey": "Clau API de xAI",
 		"getXaiApiKey": "Obtenir clau API de xAI",
+		"litellmApiKey": "Clau API de LiteLLM",
+		"litellmBaseUrl": "URL base de LiteLLM",
 		"awsCredentials": "Credencials d'AWS",
 		"awsProfile": "Perfil d'AWS",
 		"awsProfileName": "Nom del perfil d'AWS",
@@ -414,8 +418,8 @@
 		}
 	},
 	"promptCaching": {
-		"label": "Habilitar emmagatzematge en caché de prompts",
-		"description": "Quan està habilitat, Roo utilitzarà aquest model amb la memòria cau de prompts activada per reduir costos."
+		"label": "Desactivar la memòria cau de prompts",
+		"description": "Quan està marcat, Roo no utilitzarà la memòria cau de prompts per a aquest model."
 	},
 	"temperature": {
 		"useCustom": "Utilitzar temperatura personalitzada",

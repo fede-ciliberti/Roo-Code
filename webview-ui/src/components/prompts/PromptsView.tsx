@@ -1,14 +1,6 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react"
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import {
-	VSCodeTextArea,
-	VSCodeDropdown,
-	VSCodeOption,
-	VSCodeTextField,
-	VSCodeCheckbox,
-	VSCodeRadioGroup,
-	VSCodeRadio,
-} from "@vscode/webview-ui-toolkit/react"
+import { VSCodeCheckbox, VSCodeRadioGroup, VSCodeRadio } from "@vscode/webview-ui-toolkit/react"
 
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import {
@@ -29,6 +21,25 @@ import { Tab, TabContent, TabHeader } from "../common/Tab"
 import i18next from "i18next"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { Trans } from "react-i18next"
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Textarea,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+	Command,
+	CommandInput,
+	CommandList,
+	CommandEmpty,
+	CommandItem,
+	CommandGroup,
+	Input,
+} from "../ui"
+import { ChevronsUpDown, X } from "lucide-react"
 
 // Get all available groups that should show in prompts view
 const availableGroups = (Object.keys(TOOL_GROUPS) as ToolGroup[]).filter((group) => !TOOL_GROUPS[group].alwaysAvailable)
@@ -78,8 +89,13 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 	const [isToolsEditMode, setIsToolsEditMode] = useState(false)
 	const [showConfigMenu, setShowConfigMenu] = useState(false)
 	const [isCreateModeDialogOpen, setIsCreateModeDialogOpen] = useState(false)
-	const [activeSupportTab, setActiveSupportTab] = useState<SupportPromptType>("ENHANCE")
+	const [activeSupportOption, setActiveSupportOption] = useState<SupportPromptType>("ENHANCE")
 	const [isSystemPromptDisclosureOpen, setIsSystemPromptDisclosureOpen] = useState(false)
+
+	// State for mode selection popover and search
+	const [open, setOpen] = useState(false)
+	const [searchValue, setSearchValue] = useState("")
+	const searchInputRef = useRef<HTMLInputElement>(null)
 
 	// Direct update functions
 	const updateAgentPrompt = useCallback(
@@ -144,8 +160,23 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 			// Exit tools edit mode when switching modes
 			setIsToolsEditMode(false)
 		},
-		[visualMode, switchMode, setIsToolsEditMode],
+		[visualMode, switchMode],
 	)
+
+	// Handler for popover open state change
+	const onOpenChange = useCallback((open: boolean) => {
+		setOpen(open)
+		// Reset search when closing the popover
+		if (!open) {
+			setTimeout(() => setSearchValue(""), 100)
+		}
+	}, [])
+
+	// Handler for clearing search input
+	const onClearSearch = useCallback(() => {
+		setSearchValue("")
+		searchInputRef.current?.focus()
+	}, [])
 
 	// Helper function to get current mode's config
 	const getCurrentMode = useCallback((): ModeConfig | undefined => {
@@ -403,14 +434,14 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 	return (
 		<Tab>
 			<TabHeader className="flex justify-between items-center">
-				<h3 className="text-vscode-foreground m-0">{t("prompts:title")}</h3>
+				<h3 className="text-foreground m-0">{t("prompts:title")}</h3>
 				<Button onClick={onDone}>{t("prompts:done")}</Button>
 			</TabHeader>
 
 			<TabContent>
 				<div>
 					<div onClick={(e) => e.stopPropagation()} className="flex justify-between items-center mb-3">
-						<h3 className="text-vscode-foreground m-0">{t("prompts:modes.title")}</h3>
+						<h3 className="text-foreground m-0">{t("prompts:modes.title")}</h3>
 						<div className="flex gap-2">
 							<Button
 								variant="ghost"
@@ -440,9 +471,9 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 									<div
 										onClick={(e) => e.stopPropagation()}
 										onMouseDown={(e) => e.stopPropagation()}
-										className="absolute top-full right-0 w-[200px] mt-1 bg-vscode-editor-background border border-vscode-input-border rounded shadow-md z-[1000]">
+										className="absolute top-full right-0 w-[200px] mt-1 bg-background border border-border rounded shadow-md z-[1000]">
 										<div
-											className="p-2 cursor-pointer text-vscode-foreground text-sm"
+											className="p-2 cursor-pointer text-foreground text-sm"
 											onMouseDown={(e) => {
 												e.preventDefault() // Prevent blur
 												vscode.postMessage({
@@ -454,7 +485,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 											{t("prompts:modes.editGlobalModes")}
 										</div>
 										<div
-											className="p-2 cursor-pointer text-vscode-foreground text-sm border-t border-vscode-input-border"
+											className="p-2 cursor-pointer text-foreground text-sm border-t border-border"
 											onMouseDown={(e) => {
 												e.preventDefault() // Prevent blur
 												vscode.postMessage({
@@ -476,49 +507,97 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 						</div>
 					</div>
 
-					<div className="text-sm text-vscode-descriptionForeground mb-3">
-						{t("prompts:modes.createModeHelpText")}
-					</div>
+					<div className="text-sm text-muted-foreground mb-3">{t("prompts:modes.createModeHelpText")}</div>
 
-					<div className="flex gap-2 items-center mb-3 flex-wrap py-1">
-						{modes.map((modeConfig) => {
-							const isActive = visualMode === modeConfig.slug
-							return (
-								<button
-									key={modeConfig.slug}
-									data-testid={`${modeConfig.slug}-tab`}
-									data-active={isActive ? "true" : "false"}
-									onClick={() => handleModeSwitch(modeConfig)}
-									className={`px-2 py-1 border-none rounded cursor-pointer font-bold ${
-										isActive
-											? "bg-vscode-button-background text-vscode-button-foreground opacity-100"
-											: "bg-transparent text-vscode-foreground opacity-80"
-									}`}>
-									{modeConfig.name}
-								</button>
-							)
-						})}
+					<div className="flex items-center gap-1 mb-3">
+						<Popover open={open} onOpenChange={onOpenChange}>
+							<PopoverTrigger asChild>
+								<Button
+									variant="combobox"
+									role="combobox"
+									aria-expanded={open}
+									className="grow justify-between"
+									data-testid="mode-select-trigger">
+									<div>{getCurrentMode()?.name || t("prompts:modes.selectMode")}</div>
+									<ChevronsUpDown className="opacity-50" />
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
+								<Command>
+									<div className="relative">
+										<CommandInput
+											ref={searchInputRef}
+											value={searchValue}
+											onValueChange={setSearchValue}
+											placeholder={t("prompts:modes.selectMode")}
+											className="h-9 mr-4"
+											data-testid="mode-search-input"
+										/>
+										{searchValue.length > 0 && (
+											<div className="absolute right-2 top-0 bottom-0 flex items-center justify-center">
+												<X
+													className="text-vscode-input-foreground opacity-50 hover:opacity-100 size-4 p-0.5 cursor-pointer"
+													onClick={onClearSearch}
+												/>
+											</div>
+										)}
+									</div>
+									<CommandList>
+										<CommandEmpty>
+											{searchValue && (
+												<div className="py-2 px-1 text-sm">
+													{t("prompts:modes.noMatchFound")}
+												</div>
+											)}
+										</CommandEmpty>
+										<CommandGroup>
+											{modes
+												.filter((modeConfig) =>
+													searchValue
+														? modeConfig.name
+																.toLowerCase()
+																.includes(searchValue.toLowerCase())
+														: true,
+												)
+												.map((modeConfig) => (
+													<CommandItem
+														key={modeConfig.slug}
+														value={modeConfig.slug}
+														onSelect={() => {
+															handleModeSwitch(modeConfig)
+															setOpen(false)
+														}}
+														data-testid={`mode-option-${modeConfig.slug}`}>
+														<div className="flex items-center justify-between w-full">
+															<span>{modeConfig.name}</span>
+															<span className="text-foreground">{modeConfig.slug}</span>
+														</div>
+													</CommandItem>
+												))}
+										</CommandGroup>
+									</CommandList>
+								</Command>
+							</PopoverContent>
+						</Popover>
 					</div>
 				</div>
 
-				<div style={{ marginBottom: "20px" }}>
+				<div className="mb-5">
 					{/* Only show name and delete for custom modes */}
 					{visualMode && findModeBySlug(visualMode, customModes) && (
 						<div className="flex gap-3 mb-4">
 							<div className="flex-1">
 								<div className="font-bold mb-1">{t("prompts:createModeDialog.name.label")}</div>
 								<div className="flex gap-2">
-									<VSCodeTextField
+									<Input
+										type="text"
 										value={getModeProperty(findModeBySlug(visualMode, customModes), "name") ?? ""}
-										onChange={(e: Event | React.FormEvent<HTMLElement>) => {
-											const target =
-												(e as CustomEvent)?.detail?.target ||
-												((e as any).target as HTMLInputElement)
+										onChange={(e) => {
 											const customMode = findModeBySlug(visualMode, customModes)
 											if (customMode) {
 												updateCustomMode(visualMode, {
 													...customMode,
-													name: target.value,
+													name: e.target.value,
 													source: customMode.source || "global",
 												})
 											}
@@ -541,7 +620,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 							</div>
 						</div>
 					)}
-					<div style={{ marginBottom: "16px" }}>
+					<div className="mb-4">
 						<div className="flex justify-between items-center mb-1">
 							<div className="font-bold">{t("prompts:roleDefinition.title")}</div>
 							{!findModeBySlug(visualMode, customModes) && (
@@ -560,10 +639,10 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 								</Button>
 							)}
 						</div>
-						<div className="text-sm text-vscode-descriptionForeground mb-2">
+						<div className="text-sm text-muted-foreground mb-2">
 							{t("prompts:roleDefinition.description")}
 						</div>
-						<VSCodeTextArea
+						<Textarea
 							value={(() => {
 								const customMode = findModeBySlug(visualMode, customModes)
 								const prompt = customModePrompts?.[visualMode] as PromptComponent
@@ -575,7 +654,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 							})()}
 							onChange={(e) => {
 								const value =
-									(e as CustomEvent)?.detail?.target?.value ||
+									(e as unknown as CustomEvent)?.detail?.target?.value ||
 									((e as any).target as HTMLTextAreaElement).value
 								const customMode = findModeBySlug(visualMode, customModes)
 								if (customMode) {
@@ -592,36 +671,36 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 									})
 								}
 							}}
+							className="resize-y w-full"
 							rows={4}
-							resize="vertical"
-							style={{ width: "100%" }}
 							data-testid={`${getCurrentMode()?.slug || "code"}-prompt-textarea`}
 						/>
 					</div>
 					{/* Mode settings */}
 					<>
-						<div style={{ marginBottom: "12px" }}>
-							<div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-								{t("prompts:apiConfiguration.title")}
-							</div>
-							<div style={{ marginBottom: "8px" }}>
-								<VSCodeDropdown
-									value={currentApiConfigName || ""}
-									onChange={(e: any) => {
-										const value = e.detail?.target?.value || e.target?.value
+						<div className="mb-3">
+							<div className="font-bold mb-1">{t("prompts:apiConfiguration.title")}</div>
+							<div className="mb-2">
+								<Select
+									value={currentApiConfigName}
+									onValueChange={(value) => {
 										vscode.postMessage({
 											type: "loadApiConfiguration",
 											text: value,
 										})
-									}}
-									className="w-full">
-									{(listApiConfigMeta || []).map((config) => (
-										<VSCodeOption key={config.id} value={config.name}>
-											{config.name}
-										</VSCodeOption>
-									))}
-								</VSCodeDropdown>
-								<div className="text-xs mt-1.5 text-vscode-descriptionForeground">
+									}}>
+									<SelectTrigger className="w-full">
+										<SelectValue placeholder={t("settings:common.select")} />
+									</SelectTrigger>
+									<SelectContent>
+										{(listApiConfigMeta || []).map((config) => (
+											<SelectItem key={config.id} value={config.name}>
+												{config.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								<div className="text-xs mt-1.5 text-muted-foreground">
 									{t("prompts:apiConfiguration.select")}
 								</div>
 							</div>
@@ -647,7 +726,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 								)}
 							</div>
 							{!findModeBySlug(visualMode, customModes) && (
-								<div className="text-sm text-vscode-descriptionForeground mb-2">
+								<div className="text-sm text-muted-foreground mb-2">
 									{t("prompts:tools.builtInModesText")}
 								</div>
 							)}
@@ -669,7 +748,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 												disabled={!isCustomMode}>
 												{t(`prompts:tools.toolNames.${group}`)}
 												{group === "edit" && (
-													<div className="text-xs text-vscode-descriptionForeground mt-0.5">
+													<div className="text-xs text-muted-foreground mt-0.5">
 														{t("prompts:tools.allowedFiles")}{" "}
 														{(() => {
 															const currentMode = getCurrentMode()
@@ -692,7 +771,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 									})}
 								</div>
 							) : (
-								<div className="text-sm text-vscode-foreground mb-2 leading-relaxed">
+								<div className="text-sm text-foreground mb-2 leading-relaxed">
 									{(() => {
 										const currentMode = getCurrentMode()
 										const enabledGroups = currentMode?.groups || []
@@ -721,15 +800,9 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 					</>
 
 					{/* Role definition for both built-in and custom modes */}
-					<div style={{ marginBottom: "8px" }}>
-						<div
-							style={{
-								display: "flex",
-								justifyContent: "space-between",
-								alignItems: "center",
-								marginBottom: "4px",
-							}}>
-							<div style={{ fontWeight: "bold" }}>{t("prompts:customInstructions.title")}</div>
+					<div className="mb-2">
+						<div className="flex justify-between items-center mb-1">
+							<div className="font-bold">{t("prompts:customInstructions.title")}</div>
 							{!findModeBySlug(visualMode, customModes) && (
 								<Button
 									variant="ghost"
@@ -746,17 +819,12 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 								</Button>
 							)}
 						</div>
-						<div
-							style={{
-								fontSize: "13px",
-								color: "var(--vscode-descriptionForeground)",
-								marginBottom: "8px",
-							}}>
+						<div className="text-[13px] text-muted-foreground mb-2">
 							{t("prompts:customInstructions.description", {
 								modeName: getCurrentMode()?.name || "Code",
 							})}
 						</div>
-						<VSCodeTextArea
+						<Textarea
 							value={(() => {
 								const customMode = findModeBySlug(visualMode, customModes)
 								const prompt = customModePrompts?.[visualMode] as PromptComponent
@@ -768,7 +836,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 							})()}
 							onChange={(e) => {
 								const value =
-									(e as CustomEvent)?.detail?.target?.value ||
+									(e as unknown as CustomEvent)?.detail?.target?.value ||
 									((e as any).target as HTMLTextAreaElement).value
 								const customMode = findModeBySlug(visualMode, customModes)
 								if (customMode) {
@@ -788,16 +856,10 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 								}
 							}}
 							rows={4}
-							resize="vertical"
-							style={{ width: "100%" }}
+							className="w-full resize-y"
 							data-testid={`${getCurrentMode()?.slug || "code"}-custom-instructions-textarea`}
 						/>
-						<div
-							style={{
-								fontSize: "12px",
-								color: "var(--vscode-descriptionForeground)",
-								marginTop: "5px",
-							}}>
+						<div className="text-xs text-muted-foreground mt-1.5">
 							<Trans
 								i18nKey="prompts:customInstructions.loadFromFile"
 								values={{
@@ -807,11 +869,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 								components={{
 									span: (
 										<span
-											style={{
-												color: "var(--vscode-textLink-foreground)",
-												cursor: "pointer",
-												textDecoration: "underline",
-											}}
+											className="text-vscode-textLink-foreground cursor-pointer underline"
 											onClick={() => {
 												const currentMode = getCurrentMode()
 												if (!currentMode) return
@@ -834,13 +892,8 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 					</div>
 				</div>
 
-				<div
-					style={{
-						paddingBottom: "40px",
-						marginBottom: "20px",
-						borderBottom: "1px solid var(--vscode-input-border)",
-					}}>
-					<div style={{ display: "flex", gap: "8px" }}>
+				<div className="pb-4 border-b border-border">
+					<div className="flex gap-2">
 						<Button
 							variant="default"
 							onClick={() => {
@@ -874,10 +927,10 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 					</div>
 
 					{/* Custom System Prompt Disclosure */}
-					<div className="mt-12">
+					<div className="mt-4">
 						<button
 							onClick={() => setIsSystemPromptDisclosureOpen(!isSystemPromptDisclosureOpen)}
-							className="flex items-center text-xs text-vscode-foreground hover:text-vscode-textLink-foreground focus:outline-none"
+							className="flex items-center text-xs text-foreground hover:text-vscode-textLink-foreground focus:outline-none"
 							aria-expanded={isSystemPromptDisclosureOpen}>
 							<span
 								className={`codicon codicon-${isSystemPromptDisclosureOpen ? "chevron-down" : "chevron-right"} mr-1`}></span>
@@ -885,7 +938,7 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 						</button>
 
 						{isSystemPromptDisclosureOpen && (
-							<div className="text-xs text-vscode-descriptionForeground mt-2 ml-5">
+							<div className="text-xs text-muted-foreground mt-2 ml-5">
 								<Trans
 									i18nKey="prompts:advancedSystemPrompt.description"
 									values={{
@@ -917,19 +970,19 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 					</div>
 				</div>
 
-				<div className="pb-5 border-b border-vscode-input-border">
-					<h3 style={{ color: "var(--vscode-foreground)", marginBottom: "12px" }}>
-						{t("prompts:globalCustomInstructions.title")}
-					</h3>
+				<div className="pb-5 border-b border-border">
+					<h3 className="text-foreground mb-3">{t("prompts:globalCustomInstructions.title")}</h3>
 
-					<div className="text-sm text-vscode-descriptionForeground mb-2">
-						{t("prompts:globalCustomInstructions.description", { language: i18next.language })}
+					<div className="text-sm text-muted-foreground mb-2">
+						{t("prompts:globalCustomInstructions.description", {
+							language: i18next.language,
+						})}
 					</div>
-					<VSCodeTextArea
-						value={customInstructions ?? ""}
+					<Textarea
+						value={customInstructions}
 						onChange={(e) => {
 							const value =
-								(e as CustomEvent)?.detail?.target?.value ||
+								(e as unknown as CustomEvent)?.detail?.target?.value ||
 								((e as any).target as HTMLTextAreaElement).value
 							setCustomInstructions(value || undefined)
 							vscode.postMessage({
@@ -938,21 +991,16 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 							})
 						}}
 						rows={4}
-						resize="vertical"
-						className="w-full"
+						className="w-full resize-y"
 						data-testid="global-custom-instructions-textarea"
 					/>
-					<div className="text-xs text-vscode-descriptionForeground mt-1.5 mb-10">
+					<div className="text-xs text-muted-foreground mt-1.5">
 						<Trans
 							i18nKey="prompts:globalCustomInstructions.loadFromFile"
 							components={{
 								span: (
 									<span
-										style={{
-											color: "var(--vscode-textLink-foreground)",
-											cursor: "pointer",
-											textDecoration: "underline",
-										}}
+										className="text-vscode-textLink-foreground cursor-pointer underline"
 										onClick={() =>
 											vscode.postMessage({
 												type: "openFile",
@@ -970,156 +1018,113 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 					</div>
 				</div>
 
-				<div
-					style={{
-						marginTop: "20px",
-						paddingBottom: "60px",
-						borderBottom: "1px solid var(--vscode-input-border)",
-					}}>
-					<h3 style={{ color: "var(--vscode-foreground)", marginBottom: "12px" }}>
-						{t("prompts:supportPrompts.title")}
-					</h3>
-					<div
-						style={{
-							display: "flex",
-							gap: "8px",
-							alignItems: "center",
-							marginBottom: "12px",
-							flexWrap: "wrap",
-							padding: "4px 0",
-						}}>
-						{Object.keys(supportPrompt.default).map((type) => (
-							<button
-								key={type}
-								data-testid={`${type}-tab`}
-								data-active={activeSupportTab === type ? "true" : "false"}
-								onClick={() => setActiveSupportTab(type as SupportPromptType)}
-								style={{
-									padding: "4px 8px",
-									border: "none",
-									background: activeSupportTab === type ? "var(--vscode-button-background)" : "none",
-									color:
-										activeSupportTab === type
-											? "var(--vscode-button-foreground)"
-											: "var(--vscode-foreground)",
-									cursor: "pointer",
-									opacity: activeSupportTab === type ? 1 : 0.8,
-									borderRadius: "3px",
-									fontWeight: "bold",
-								}}>
-								{t(`prompts:supportPrompts.types.${type}.label`)}
-							</button>
-						))}
+				<div className="mt-5 pb-[3.75rem] border-b border-border">
+					<h3 className="text-foreground mb-3">{t("prompts:supportPrompts.title")}</h3>
+					<div className="flex gap-4 items-center flex-wrap py-1">
+						<Select
+							value={activeSupportOption}
+							onValueChange={(type) => setActiveSupportOption(type as SupportPromptType)}>
+							<SelectTrigger className="w-full" data-testid="support-prompt-select-trigger">
+								<SelectValue placeholder={t("settings:common.select")} />
+							</SelectTrigger>
+							<SelectContent>
+								{Object.keys(supportPrompt.default).map((type) => (
+									<SelectItem key={type} value={type} data-testid={`${type}-option`}>
+										{t(`prompts:supportPrompts.types.${type}.label`)}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
 					</div>
 
 					{/* Support prompt description */}
-					<div
-						style={{
-							fontSize: "13px",
-							color: "var(--vscode-descriptionForeground)",
-							margin: "8px 0 16px",
-						}}>
-						{t(`prompts:supportPrompts.types.${activeSupportTab}.description`)}
+					<div className="text-[13px] text-muted-foreground my-2 mb-4">
+						{t(`prompts:supportPrompts.types.${activeSupportOption}.description`)}
 					</div>
 
-					{/* Show active tab content */}
-					<div key={activeSupportTab}>
-						<div
-							style={{
-								display: "flex",
-								justifyContent: "space-between",
-								alignItems: "center",
-								marginBottom: "4px",
-							}}>
-							<div style={{ fontWeight: "bold" }}>{t("prompts:supportPrompts.prompt")}</div>
+					<div key={activeSupportOption}>
+						<div className="flex justify-between items-center mb-1">
+							<div className="font-bold">{t("prompts:supportPrompts.prompt")}</div>
 							<Button
 								variant="ghost"
 								size="icon"
-								onClick={() => handleSupportReset(activeSupportTab)}
-								title={t("prompts:supportPrompts.resetPrompt", { promptType: activeSupportTab })}>
+								onClick={() => handleSupportReset(activeSupportOption)}
+								title={t("prompts:supportPrompts.resetPrompt", {
+									promptType: activeSupportOption,
+								})}>
 								<span className="codicon codicon-discard"></span>
 							</Button>
 						</div>
 
-						<VSCodeTextArea
-							value={getSupportPromptValue(activeSupportTab)}
+						<Textarea
+							value={getSupportPromptValue(activeSupportOption)}
 							onChange={(e) => {
 								const value =
-									(e as CustomEvent)?.detail?.target?.value ||
+									(e as unknown as CustomEvent)?.detail?.target?.value ||
 									((e as any).target as HTMLTextAreaElement).value
 								const trimmedValue = value.trim()
-								updateSupportPrompt(activeSupportTab, trimmedValue || undefined)
+								updateSupportPrompt(activeSupportOption, trimmedValue || undefined)
 							}}
 							rows={6}
-							resize="vertical"
-							style={{ width: "100%" }}
+							className="resize-y w-full"
 						/>
 
-						{activeSupportTab === "ENHANCE" && (
+						{activeSupportOption === "ENHANCE" && (
 							<>
 								<div>
-									<div
-										style={{
-											color: "var(--vscode-foreground)",
-											fontSize: "13px",
-											marginBottom: "20px",
-											marginTop: "5px",
-										}}></div>
-									<div style={{ marginBottom: "12px" }}>
-										<div style={{ marginBottom: "8px" }}>
-											<div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+									<div className="text-foreground text-[13px] mb-5 mt-1.5"></div>
+									<div className="mb-3">
+										<div className="mb-2">
+											<div className="font-bold mb-1">
 												{t("prompts:supportPrompts.enhance.apiConfiguration")}
 											</div>
-											<div
-												style={{
-													fontSize: "13px",
-													color: "var(--vscode-descriptionForeground)",
-												}}>
+											<div className="text-[13px] text-muted-foreground">
 												{t("prompts:supportPrompts.enhance.apiConfigDescription")}
 											</div>
 										</div>
-										<VSCodeDropdown
-											value={enhancementApiConfigId || ""}
-											data-testid="api-config-dropdown"
-											onChange={(e: any) => {
-												const value = e.detail?.target?.value || e.target?.value
-												setEnhancementApiConfigId(value)
+										<Select
+											value={enhancementApiConfigId || "-"}
+											onValueChange={(value) => {
+												// normalise to empty string for empty value
+												// because we can't use it directly for the select element
+												setEnhancementApiConfigId(value === "-" ? "" : value)
 												vscode.postMessage({
 													type: "enhancementApiConfigId",
 													text: value,
 												})
-											}}
-											style={{ width: "300px" }}>
-											<VSCodeOption value="">
-												{t("prompts:supportPrompts.enhance.useCurrentConfig")}
-											</VSCodeOption>
-											{(listApiConfigMeta || []).map((config) => (
-												<VSCodeOption key={config.id} value={config.id}>
-													{config.name}
-												</VSCodeOption>
-											))}
-										</VSCodeDropdown>
+											}}>
+											<SelectTrigger data-testid="api-config-select" className="w-full">
+												<SelectValue
+													placeholder={t("prompts:supportPrompts.enhance.useCurrentConfig")}
+												/>
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="-">
+													{t("prompts:supportPrompts.enhance.useCurrentConfig")}
+												</SelectItem>
+												{(listApiConfigMeta || []).map((config) => (
+													<SelectItem
+														key={config.id}
+														value={config.id}
+														data-testid={`${config.id}-option`}>
+														{config.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
 									</div>
 								</div>
 
-								<div style={{ marginTop: "12px" }}>
-									<VSCodeTextArea
+								<div className="mt-4">
+									<Textarea
 										value={testPrompt}
 										onChange={(e) => setTestPrompt((e.target as HTMLTextAreaElement).value)}
 										placeholder={t("prompts:supportPrompts.enhance.testPromptPlaceholder")}
 										rows={3}
-										resize="vertical"
-										style={{ width: "100%" }}
+										className="w-full resize-y"
 										data-testid="test-prompt-textarea"
 									/>
-									<div
-										style={{
-											marginTop: "8px",
-											display: "flex",
-											justifyContent: "flex-start",
-											alignItems: "center",
-											gap: 8,
-										}}>
+									<div className="mt-2 flex justify-start items-center gap-2">
 										<Button
 											variant="default"
 											onClick={handleTestEnhancement}
@@ -1135,93 +1140,47 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 			</TabContent>
 
 			{isCreateModeDialogOpen && (
-				<div
-					style={{
-						position: "fixed",
-						inset: 0,
-						display: "flex",
-						justifyContent: "flex-end",
-						backgroundColor: "rgba(0, 0, 0, 0.5)",
-						zIndex: 1000,
-					}}>
-					<div
-						style={{
-							width: "calc(100vw - 100px)",
-							height: "100%",
-							backgroundColor: "var(--vscode-editor-background)",
-							boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.2)",
-							display: "flex",
-							flexDirection: "column",
-							position: "relative",
-						}}>
-						<div
-							style={{
-								flex: 1,
-								padding: "20px",
-								overflowY: "auto",
-								minHeight: 0,
-							}}>
+				<div className="fixed inset-0 flex justify-end bg-black/50 z-[1000]">
+					<div className="w-[calc(100vw-100px)] h-full bg-background shadow-md flex flex-col relative">
+						<div className="flex-1 p-5 overflow-y-auto min-h-0">
 							<Button
 								variant="ghost"
 								size="icon"
 								onClick={() => setIsCreateModeDialogOpen(false)}
-								style={{
-									position: "absolute",
-									top: "20px",
-									right: "20px",
-								}}>
+								className="absolute top-5 right-5">
 								<span className="codicon codicon-close"></span>
 							</Button>
-							<h2 style={{ margin: "0 0 16px" }}>{t("prompts:createModeDialog.title")}</h2>
-							<div style={{ marginBottom: "16px" }}>
-								<div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-									{t("prompts:createModeDialog.name.label")}
-								</div>
-								<VSCodeTextField
+							<h2 className="mb-4">{t("prompts:createModeDialog.title")}</h2>
+							<div className="mb-4">
+								<div className="font-bold mb-1">{t("prompts:createModeDialog.name.label")}</div>
+								<Input
+									type="text"
 									value={newModeName}
-									onChange={(e: Event | React.FormEvent<HTMLElement>) => {
-										const target =
-											(e as CustomEvent)?.detail?.target ||
-											((e as any).target as HTMLInputElement)
-										handleNameChange(target.value)
+									onChange={(e) => {
+										handleNameChange(e.target.value)
 									}}
-									style={{ width: "100%" }}
+									className="w-full"
 								/>
-								{nameError && (
-									<div className="text-xs text-vscode-errorForeground mt-1">{nameError}</div>
-								)}
+								{nameError && <div className="text-xs text-destructive mt-1">{nameError}</div>}
 							</div>
-							<div style={{ marginBottom: "16px" }}>
-								<div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-									{t("prompts:createModeDialog.slug.label")}
-								</div>
-								<VSCodeTextField
+							<div className="mb-4">
+								<div className="font-bold mb-1">{t("prompts:createModeDialog.slug.label")}</div>
+								<Input
+									type="text"
 									value={newModeSlug}
-									onChange={(e: Event | React.FormEvent<HTMLElement>) => {
-										const target =
-											(e as CustomEvent)?.detail?.target ||
-											((e as any).target as HTMLInputElement)
-										setNewModeSlug(target.value)
+									onChange={(e) => {
+										setNewModeSlug(e.target.value)
 									}}
-									style={{ width: "100%" }}
+									className="w-full"
 								/>
-								<div
-									style={{
-										fontSize: "12px",
-										color: "var(--vscode-descriptionForeground)",
-										marginTop: "4px",
-									}}>
+								<div className="text-xs text-muted-foreground mt-1">
 									{t("prompts:createModeDialog.slug.description")}
 								</div>
-								{slugError && (
-									<div className="text-xs text-vscode-errorForeground mt-1">{slugError}</div>
-								)}
+								{slugError && <div className="text-xs text-destructive mt-1">{slugError}</div>}
 							</div>
-							<div style={{ marginBottom: "16px" }}>
-								<div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-									{t("prompts:createModeDialog.saveLocation.label")}
-								</div>
-								<div className="text-sm text-vscode-descriptionForeground mb-2">
+							<div className="mb-4">
+								<div className="font-bold mb-1">{t("prompts:createModeDialog.saveLocation.label")}</div>
+								<div className="text-sm text-muted-foreground mb-2">
 									{t("prompts:createModeDialog.saveLocation.description")}
 								</div>
 								<VSCodeRadioGroup
@@ -1233,72 +1192,44 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 									}}>
 									<VSCodeRadio value="global">
 										{t("prompts:createModeDialog.saveLocation.global.label")}
-										<div
-											style={{
-												fontSize: "12px",
-												color: "var(--vscode-descriptionForeground)",
-												marginTop: "2px",
-											}}>
+										<div className="text-xs text-muted-foreground mt-0.5">
 											{t("prompts:createModeDialog.saveLocation.global.description")}
 										</div>
 									</VSCodeRadio>
 									<VSCodeRadio value="project">
 										{t("prompts:createModeDialog.saveLocation.project.label")}
-										<div className="text-xs text-vscode-descriptionForeground mt-0.5">
+										<div className="text-xs text-muted-foreground mt-0.5">
 											{t("prompts:createModeDialog.saveLocation.project.description")}
 										</div>
 									</VSCodeRadio>
 								</VSCodeRadioGroup>
 							</div>
 
-							<div style={{ marginBottom: "16px" }}>
-								<div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+							<div className="mb-4">
+								<div className="font-bold mb-1">
 									{t("prompts:createModeDialog.roleDefinition.label")}
 								</div>
-								<div
-									style={{
-										fontSize: "13px",
-										color: "var(--vscode-descriptionForeground)",
-										marginBottom: "8px",
-									}}>
+								<div className="text-[13px] text-muted-foreground mb-2">
 									{t("prompts:createModeDialog.roleDefinition.description")}
 								</div>
-								<VSCodeTextArea
+								<Textarea
 									value={newModeRoleDefinition}
 									onChange={(e) => {
-										const value =
-											(e as CustomEvent)?.detail?.target?.value ||
-											((e as any).target as HTMLTextAreaElement).value
-										setNewModeRoleDefinition(value)
+										setNewModeRoleDefinition(e.target.value)
 									}}
 									rows={4}
-									resize="vertical"
-									style={{ width: "100%" }}
+									className="w-full resize-y"
 								/>
 								{roleDefinitionError && (
-									<div className="text-xs text-vscode-errorForeground mt-1">
-										{roleDefinitionError}
-									</div>
+									<div className="text-xs text-destructive mt-1">{roleDefinitionError}</div>
 								)}
 							</div>
-							<div style={{ marginBottom: "16px" }}>
-								<div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-									{t("prompts:createModeDialog.tools.label")}
-								</div>
-								<div
-									style={{
-										fontSize: "13px",
-										color: "var(--vscode-descriptionForeground)",
-										marginBottom: "8px",
-									}}>
+							<div className="mb-4">
+								<div className="font-bold mb-1">{t("prompts:createModeDialog.tools.label")}</div>
+								<div className="text-[13px] text-muted-foreground mb-2">
 									{t("prompts:createModeDialog.tools.description")}
 								</div>
-								<div
-									style={{
-										display: "grid",
-										gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-										gap: "8px",
-									}}>
+								<div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2">
 									{availableGroups.map((group) => (
 										<VSCodeCheckbox
 											key={group}
@@ -1319,45 +1250,26 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 										</VSCodeCheckbox>
 									))}
 								</div>
-								{groupsError && (
-									<div className="text-xs text-vscode-errorForeground mt-1">{groupsError}</div>
-								)}
+								{groupsError && <div className="text-xs text-destructive mt-1">{groupsError}</div>}
 							</div>
-							<div style={{ marginBottom: "16px" }}>
-								<div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+							<div className="mb-4">
+								<div className="font-bold mb-1">
 									{t("prompts:createModeDialog.customInstructions.label")}
 								</div>
-								<div
-									style={{
-										fontSize: "13px",
-										color: "var(--vscode-descriptionForeground)",
-										marginBottom: "8px",
-									}}>
+								<div className="text-[13px] text-muted-foreground mb-2">
 									{t("prompts:createModeDialog.customInstructions.description")}
 								</div>
-								<VSCodeTextArea
+								<Textarea
 									value={newModeCustomInstructions}
 									onChange={(e) => {
-										const value =
-											(e as CustomEvent)?.detail?.target?.value ||
-											((e as any).target as HTMLTextAreaElement).value
-										setNewModeCustomInstructions(value)
+										setNewModeCustomInstructions(e.target.value)
 									}}
 									rows={4}
-									resize="vertical"
-									style={{ width: "100%" }}
+									className="w-full resize-y"
 								/>
 							</div>
 						</div>
-						<div
-							style={{
-								display: "flex",
-								justifyContent: "flex-end",
-								padding: "12px 20px",
-								gap: "8px",
-								borderTop: "1px solid var(--vscode-editor-lineHighlightBorder)",
-								backgroundColor: "var(--vscode-editor-background)",
-							}}>
+						<div className="flex justify-end p-3 px-5 gap-2 border-t border-vscode-editor-lineHighlightBorder bg-background">
 							<Button variant="secondary" onClick={() => setIsCreateModeDialogOpen(false)}>
 								{t("prompts:createModeDialog.buttons.cancel")}
 							</Button>
@@ -1370,71 +1282,27 @@ const PromptsView = ({ onDone }: PromptsViewProps) => {
 			)}
 
 			{isDialogOpen && (
-				<div
-					style={{
-						position: "fixed",
-						inset: 0,
-						display: "flex",
-						justifyContent: "flex-end",
-						backgroundColor: "rgba(0, 0, 0, 0.5)",
-						zIndex: 1000,
-					}}>
-					<div
-						style={{
-							width: "calc(100vw - 100px)",
-							height: "100%",
-							backgroundColor: "var(--vscode-editor-background)",
-							boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.2)",
-							display: "flex",
-							flexDirection: "column",
-							position: "relative",
-						}}>
-						<div
-							style={{
-								flex: 1,
-								padding: "20px",
-								overflowY: "auto",
-								minHeight: 0,
-							}}>
+				<div className="fixed inset-0 flex justify-end bg-black/50 z-[1000]">
+					<div className="w-[calc(100vw-100px)] h-full bg-background shadow-md flex flex-col relative">
+						<div className="flex-1 p-5 overflow-y-auto min-h-0">
 							<Button
 								variant="ghost"
 								size="icon"
 								onClick={() => setIsDialogOpen(false)}
-								style={{
-									position: "absolute",
-									top: "20px",
-									right: "20px",
-								}}>
+								className="absolute top-5 right-5">
 								<span className="codicon codicon-close"></span>
 							</Button>
-							<h2 style={{ margin: "0 0 16px" }}>
+							<h2 className="mb-4">
 								{selectedPromptTitle ||
-									t("prompts:systemPrompt.title", { modeName: getCurrentMode()?.name || "Code" })}
+									t("prompts:systemPrompt.title", {
+										modeName: getCurrentMode()?.name || "Code",
+									})}
 							</h2>
-							<pre
-								style={{
-									padding: "8px",
-									whiteSpace: "pre-wrap",
-									wordBreak: "break-word",
-									fontFamily: "var(--vscode-editor-font-family)",
-									fontSize: "var(--vscode-editor-font-size)",
-									color: "var(--vscode-editor-foreground)",
-									backgroundColor: "var(--vscode-editor-background)",
-									border: "1px solid var(--vscode-editor-lineHighlightBorder)",
-									borderRadius: "4px",
-									overflowY: "auto",
-								}}>
+							<pre className="p-2 whitespace-pre-wrap break-words font-mono text-base text-foreground bg-background border border-vscode-editor-lineHighlightBorder rounded overflow-y-auto">
 								{selectedPromptContent}
 							</pre>
 						</div>
-						<div
-							style={{
-								display: "flex",
-								justifyContent: "flex-end",
-								padding: "12px 20px",
-								borderTop: "1px solid var(--vscode-editor-lineHighlightBorder)",
-								backgroundColor: "var(--vscode-editor-background)",
-							}}>
+						<div className="flex justify-end p-3 px-5 border-t border-vscode-editor-lineHighlightBorder bg-background">
 							<Button variant="secondary" onClick={() => setIsDialogOpen(false)}>
 								{t("prompts:createModeDialog.close")}
 							</Button>

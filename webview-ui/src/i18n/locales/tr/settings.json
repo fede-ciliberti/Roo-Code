@@ -22,17 +22,15 @@
 	},
 	"sections": {
 		"providers": "Sağlayıcılar",
-		"autoApprove": "Otomatik Onay",
-		"browser": "Tarayıcı / Bilgisayar Kullanımı",
+		"autoApprove": "Oto-Onay",
+		"browser": "Bilgisayar Erişimi",
 		"checkpoints": "Kontrol Noktaları",
 		"notifications": "Bildirimler",
-		"contextManagement": "Bağlam Yönetimi",
+		"contextManagement": "Bağlam",
 		"terminal": "Terminal",
-		"advanced": "Gelişmiş",
-		"experimental": "Deneysel Özellikler",
+		"experimental": "Deneysel",
 		"language": "Dil",
-		"about": "Roo Code Hakkında",
-		"interface": "Arayüz"
+		"about": "Roo Code Hakkında"
 	},
 	"autoApprove": {
 		"description": "Roo'nun onay gerektirmeden otomatik olarak işlemler gerçekleştirmesine izin verin. Bu ayarları yalnızca yapay zekaya tamamen güveniyorsanız ve ilgili güvenlik risklerini anlıyorsanız etkinleştirin.",
@@ -119,6 +117,10 @@
 		"noCustomHeaders": "Tanımlanmış özel başlık yok. Eklemek için + düğmesine tıklayın.",
 		"requestyApiKey": "Requesty API Anahtarı",
 		"getRequestyApiKey": "Requesty API Anahtarı Al",
+		"refreshModels": {
+			"label": "Modelleri Yenile",
+			"hint": "En son modelleri görmek için lütfen ayarları yeniden açın."
+		},
 		"openRouterTransformsText": "İstem ve mesaj zincirlerini bağlam boyutuna sıkıştır (<a>OpenRouter Dönüşümleri</a>)",
 		"anthropicApiKey": "Anthropic API Anahtarı",
 		"getAnthropicApiKey": "Anthropic API Anahtarı Al",
@@ -140,6 +142,8 @@
 		"codestralBaseUrlDesc": "Codestral modeli için alternatif URL ayarlayın.",
 		"xaiApiKey": "xAI API Anahtarı",
 		"getXaiApiKey": "xAI API Anahtarı Al",
+		"litellmApiKey": "LiteLLM API Anahtarı",
+		"litellmBaseUrl": "LiteLLM Temel URL",
 		"awsCredentials": "AWS Kimlik Bilgileri",
 		"awsProfile": "AWS Profili",
 		"awsProfileName": "AWS Profil Adı",
@@ -414,8 +418,8 @@
 		}
 	},
 	"promptCaching": {
-		"label": "Prompt önbelleğini etkinleştir",
-		"description": "Etkinleştirildiğinde, Roo maliyetleri azaltmak için prompt önbelleği açık olan bu modeli kullanacaktır."
+		"label": "Prompt önbelleğini devre dışı bırak",
+		"description": "İşaretlendiğinde, Roo bu model için prompt önbelleğini kullanmayacaktır."
 	},
 	"temperature": {
 		"useCustom": "Özel sıcaklık kullan",
