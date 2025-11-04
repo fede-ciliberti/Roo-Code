@@ -1,0 +1,4 @@
+
+> @roo-code/build@ lint /home/fciliberti/Trabajos/VSExtensions/Roo-Code/packages/build
+> eslint src --ext=ts --max-warnings=0
+

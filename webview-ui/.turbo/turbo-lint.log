@@ -1,0 +1,7 @@
+
+> @roo-code/vscode-webview@ lint /home/fciliberti/Trabajos/VSExtensions/Roo-Code/webview-ui
+> eslint src --ext=ts,tsx --max-warnings=0
+
+Invalid option '--ext' - perhaps you meant '-c'?
+You're using eslint.config.js, some command line flags are no longer available. Please see https://eslint.org/docs/latest/use/command-line-interface for details.
+ ELIFECYCLE  Command failed with exit code 2.

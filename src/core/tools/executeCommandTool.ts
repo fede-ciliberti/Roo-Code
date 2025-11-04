@@ -25,6 +25,7 @@ export async function executeCommandTool(
 ) {
 	let command: string | undefined = block.params.command
 	const customCwd: string | undefined = block.params.cwd
+	const background: boolean = block.params.background ?? false
 
 	try {
 		if (block.partial) {
@@ -66,6 +67,7 @@ export async function executeCommandTool(
 				customCwd,
 				terminalShellIntegrationDisabled,
 				terminalOutputLineLimit,
+				background,
 			}
 
 			try {
@@ -84,6 +86,7 @@ export async function executeCommandTool(
 				if (error instanceof ShellIntegrationError) {
 					const [rejected, result] = await executeCommand(cline, {
 						...options,
+						background,
 						terminalShellIntegrationDisabled: true,
 					})
 
@@ -111,6 +114,7 @@ export type ExecuteCommandOptions = {
 	customCwd?: string
 	terminalShellIntegrationDisabled?: boolean
 	terminalOutputLineLimit?: number
+	background?: boolean
 }
 
 export async function executeCommand(
@@ -121,6 +125,7 @@ export async function executeCommand(
 		customCwd,
 		terminalShellIntegrationDisabled = false,
 		terminalOutputLineLimit = 500,
+		background = false,
 	}: ExecuteCommandOptions,
 ): Promise<[boolean, ToolResponse]> {
 	let workingDir: string
@@ -140,7 +145,7 @@ export async function executeCommand(
 	}
 
 	let message: { text?: string; images?: string[] } | undefined
-	let runInBackground = false
+	let runInBackground = background
 	let completed = false
 	let result: string = ""
 	let exitDetails: ExitCodeDetails | undefined
