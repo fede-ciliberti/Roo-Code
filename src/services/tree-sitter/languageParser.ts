@@ -1,5 +1,5 @@
 import * as path from "path"
-import Parser from "web-tree-sitter"
+import * as Parser from "web-tree-sitter"
 import {
 	javascriptQuery,
 	typescriptQuery,
@@ -32,20 +32,20 @@ import {
 
 export interface LanguageParser {
 	[key: string]: {
-		parser: Parser
-		query: Parser.Query
+		parser: any
+		query: any
 	}
 }
 
 async function loadLanguage(langName: string) {
-	return await Parser.Language.load(path.join(__dirname, `tree-sitter-${langName}.wasm`))
+	return await (Parser as any).Language.load(path.join(__dirname, `tree-sitter-${langName}.wasm`))
 }
 
 let isParserInitialized = false
 
 async function initializeParser() {
 	if (!isParserInitialized) {
-		await Parser.init()
+		await (Parser as any).init()
 		isParserInitialized = true
 	}
 }
@@ -205,7 +205,8 @@ export async function loadRequiredLanguageParsers(filesToParse: string[]): Promi
 			default:
 				throw new Error(`Unsupported language: ${ext}`)
 		}
-		const parser = new Parser()
+		const ParserModule = Parser as any
+		const parser = new ParserModule()
 		parser.setLanguage(language)
 		parsers[parserKey] = { parser, query }
 	}

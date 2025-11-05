@@ -1,5 +1,4 @@
 import { loadRequiredLanguageParsers } from "../languageParser"
-import Parser from "web-tree-sitter"
 
 // Mock web-tree-sitter
 const mockSetLanguage = jest.fn()
@@ -13,14 +12,24 @@ jest.mock("web-tree-sitter", () => {
 })
 
 // Add static methods to Parser mock
-const ParserMock = Parser as jest.MockedClass<typeof Parser>
-ParserMock.init = jest.fn().mockResolvedValue(undefined)
-ParserMock.Language = {
-	load: jest.fn().mockResolvedValue({
-		query: jest.fn().mockReturnValue("mockQuery"),
-	}),
-	prototype: {}, // Add required prototype property
-} as unknown as typeof Parser.Language
+// Mock the Parser constructor and static methods directly
+const mockInit = jest.fn().mockResolvedValue(undefined)
+const mockLanguageLoad = jest.fn().mockResolvedValue({
+	query: jest.fn().mockReturnValue("mockQuery"),
+})
+
+// Create a mock Parser class
+class MockParser {
+	static init = mockInit
+	static Language = {
+		load: mockLanguageLoad,
+		prototype: {},
+	}
+
+	setLanguage() {}
+}
+
+const ParserMock = MockParser as any
 
 describe("Language Parser", () => {
 	beforeEach(() => {

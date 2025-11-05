@@ -3,15 +3,15 @@ import * as path from "path"
 
 import delay from "delay"
 
-import { Task } from "../task/Task"
-import { CommandExecutionStatus } from "../../schemas"
-import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag, ToolResponse } from "../../shared/tools"
-import { formatResponse } from "../prompts/responses"
-import { unescapeHtmlEntities } from "../../utils/text-normalization"
-import { telemetryService } from "../../services/telemetry/TelemetryService"
-import { ExitCodeDetails, RooTerminalCallbacks, RooTerminalProcess } from "../../integrations/terminal/types"
-import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { Terminal } from "../../integrations/terminal/Terminal"
+import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
+import { ExitCodeDetails, RooTerminalCallbacks, RooTerminalProcess } from "../../integrations/terminal/types"
+import { CommandExecutionStatus } from "../../schemas"
+import { telemetryService } from "../../services/telemetry/TelemetryService"
+import { AskApproval, HandleError, PushToolResult, RemoveClosingTag, ToolResponse, ToolUse } from "../../shared/tools"
+import { unescapeHtmlEntities } from "../../utils/text-normalization"
+import { formatResponse } from "../prompts/responses"
+import { Task } from "../task/Task"
 
 class ShellIntegrationError extends Error {}
 
@@ -25,7 +25,7 @@ export async function executeCommandTool(
 ) {
 	let command: string | undefined = block.params.command
 	const customCwd: string | undefined = block.params.cwd
-	const background: boolean = block.params.background ?? false
+	const background: boolean = Boolean(block.params.background)
 
 	try {
 		if (block.partial) {
@@ -213,6 +213,11 @@ export async function executeCommand(
 
 	const process = terminal.runCommand(command, callbacks)
 	cline.terminalProcess = process
+
+	// Check if command should run in background and continue immediately
+	if (runInBackground) {
+		process.continue()
+	}
 
 	await process
 	cline.terminalProcess = undefined

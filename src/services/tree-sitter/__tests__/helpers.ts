@@ -2,7 +2,6 @@ import { jest } from "@jest/globals"
 import { parseSourceCodeDefinitionsForFile, setMinComponentLines } from ".."
 import * as fs from "fs/promises"
 import * as path from "path"
-import Parser from "web-tree-sitter"
 import tsxQuery from "../queries/tsx"
 // Mock setup
 jest.mock("fs/promises")
@@ -27,7 +26,7 @@ export const debugLog = (message: string, ...args: any[]) => {
 }
 
 // Store the initialized TreeSitter for reuse
-let initializedTreeSitter: Parser | null = null
+let initializedTreeSitter: any | null = null
 
 // Function to initialize tree-sitter
 export async function initializeTreeSitter() {
