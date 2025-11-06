@@ -30,6 +30,7 @@ export async function executeCommandTool(
 ) {
 	let command: string | undefined = block.params.command
 	const customCwd: string | undefined = block.params.cwd
+	const background: boolean = block.params.background === "true"
 
 	try {
 		if (block.partial) {
@@ -90,6 +91,7 @@ export async function executeCommandTool(
 				executionId,
 				command,
 				customCwd,
+				background,
 				terminalShellIntegrationDisabled,
 				terminalOutputLineLimit,
 				terminalOutputCharacterLimit,
@@ -137,6 +139,7 @@ export type ExecuteCommandOptions = {
 	executionId: string
 	command: string
 	customCwd?: string
+	background?: boolean
 	terminalShellIntegrationDisabled?: boolean
 	terminalOutputLineLimit?: number
 	terminalOutputCharacterLimit?: number
@@ -149,6 +152,7 @@ export async function executeCommand(
 		executionId,
 		command,
 		customCwd,
+		background = false,
 		terminalShellIntegrationDisabled = true,
 		terminalOutputLineLimit = 500,
 		terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
@@ -174,7 +178,7 @@ export async function executeCommand(
 	}
 
 	let message: { text?: string; images?: string[] } | undefined
-	let runInBackground = false
+	let runInBackground = background
 	let completed = false
 	let result: string = ""
 	let exitDetails: ExitCodeDetails | undefined
@@ -199,15 +203,17 @@ export async function executeCommand(
 				return
 			}
 
-			try {
-				const { response, text, images } = await task.ask("command_output", "")
-				runInBackground = true
+			if (!background) {
+				try {
+					const { response, text, images } = await task.ask("command_output", "")
+					runInBackground = true
 
-				if (response === "messageResponse") {
-					message = { text, images }
-					process.continue()
-				}
-			} catch (_error) {}
+					if (response === "messageResponse") {
+						message = { text, images }
+						process.continue()
+					}
+				} catch (_error) {}
+			}
 		},
 		onCompleted: (output: string | undefined) => {
 			result = Terminal.compressTerminalOutput(
