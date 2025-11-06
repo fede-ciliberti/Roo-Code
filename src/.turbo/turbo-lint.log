@@ -1,0 +1,5 @@
+ WARN  Unsupported engine: wanted: {"node":"20.19.2"} (current: {"node":"v20.19.5","pnpm":"10.8.1"})
+
+> roo-cline@3.28.18 lint /home/fciliberti/Trabajos/VSExtensions/Roo-Code/src
+> eslint . --ext=ts --max-warnings=0
+

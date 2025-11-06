@@ -30,6 +30,7 @@ export async function executeCommandTool(
 ) {
 	let command: string | undefined = block.params.command
 	const customCwd: string | undefined = block.params.cwd
+	const background: boolean = Boolean(block.params.background)
 
 	try {
 		if (block.partial) {
@@ -94,6 +95,7 @@ export async function executeCommandTool(
 				terminalOutputLineLimit,
 				terminalOutputCharacterLimit,
 				commandExecutionTimeout,
+				background,
 			}
 
 			try {
@@ -112,6 +114,7 @@ export async function executeCommandTool(
 				if (error instanceof ShellIntegrationError) {
 					const [rejected, result] = await executeCommand(task, {
 						...options,
+						background,
 						terminalShellIntegrationDisabled: true,
 					})
 
@@ -141,6 +144,7 @@ export type ExecuteCommandOptions = {
 	terminalOutputLineLimit?: number
 	terminalOutputCharacterLimit?: number
 	commandExecutionTimeout?: number
+	background?: boolean
 }
 
 export async function executeCommand(
@@ -153,6 +157,7 @@ export async function executeCommand(
 		terminalOutputLineLimit = 500,
 		terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 		commandExecutionTimeout = 0,
+		background = false,
 	}: ExecuteCommandOptions,
 ): Promise<[boolean, ToolResponse]> {
 	// Convert milliseconds back to seconds for display purposes.
@@ -174,7 +179,7 @@ export async function executeCommand(
 	}
 
 	let message: { text?: string; images?: string[] } | undefined
-	let runInBackground = false
+	let runInBackground = background
 	let completed = false
 	let result: string = ""
 	let exitDetails: ExitCodeDetails | undefined
@@ -251,6 +256,11 @@ export async function executeCommand(
 
 	const process = terminal.runCommand(command, callbacks)
 	task.terminalProcess = process
+
+	// Check if command should run in background and continue immediately
+	if (runInBackground) {
+		process.continue()
+	}
 
 	// Implement command execution timeout (skip if timeout is 0).
 	if (commandExecutionTimeout > 0) {

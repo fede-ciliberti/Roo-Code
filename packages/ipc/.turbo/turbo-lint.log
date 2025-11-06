@@ -1,0 +1,4 @@
+
+> @roo-code/ipc@0.0.0 lint /home/fciliberti/Trabajos/VSExtensions/Roo-Code/packages/ipc
+> eslint src --ext=ts --max-warnings=0
+

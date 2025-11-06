@@ -1,0 +1,4 @@
+
+> @roo-code/telemetry@0.0.0 lint /home/fciliberti/Trabajos/VSExtensions/Roo-Code/packages/telemetry
+> eslint src --ext=ts --max-warnings=0
+
